@@ -1,7 +1,7 @@
 use super::{Preprocessor, PreprocessorContext};
 use crate::book::Book;
 use crate::errors::*;
-use log::{debug, trace, warn};
+use log::{debug, error, trace, warn};
 use shlex::Shlex;
 use std::io::{self, Read, Write};
 use std::process::{Child, Command, Stdio};
@@ -164,11 +164,11 @@ impl Preprocessor for CmdPreprocessor {
 
         if let Err(ref e) = outcome {
             if e.kind() == io::ErrorKind::NotFound {
-                warn!(
-                    "The command wasn't found, is the \"{}\" preprocessor installed?",
-                    self.name
+                error!(
+                    "The command {} wasn't found, is the \"{}\" preprocessor installed?",
+                    self.cmd, self.name
                 );
-                warn!("\tCommand: {}", self.cmd);
+                std::process::exit(1);
             }
         }
 
