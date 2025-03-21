@@ -134,7 +134,7 @@ impl Preprocessor for CmdPreprocessor {
         })
     }
 
-    fn supports_renderer(&self, renderer: &str) -> bool {
+    fn supports_renderer(&self, renderer: &str, error_on_missing_preprocessor: bool) -> bool {
         debug!(
             "Checking if the \"{}\" preprocessor supports \"{}\"",
             self.name(),
@@ -164,11 +164,17 @@ impl Preprocessor for CmdPreprocessor {
 
         if let Err(ref e) = outcome {
             if e.kind() == io::ErrorKind::NotFound {
-                error!(
-                    "The command {} wasn't found, is the \"{}\" preprocessor installed?",
+                let message = format!(
+                    "The command \"{}\" wasn't found, is the \"{}\" preprocessor installed?",
                     self.cmd, self.name
                 );
-                std::process::exit(1);
+
+                if error_on_missing_preprocessor {
+                    error!("{message}");
+                    std::process::exit(1);
+                } else {
+                    warn!("{message}");
+                }
             }
         }
 
